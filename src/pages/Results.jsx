@@ -2,7 +2,94 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+// --- ZERO-RISK FLOATING CHATBOT COMPONENT ---
+const GemmaMentorBot = ({ student }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [messages, setMessages] = React.useState([
+    { text: `Hi ${student?.name || 'Student'}! I'm your Gemma AI Mentor. Ask me anything about your ${student?.dreamCareer || 'career'} roadmap!`, sender: 'bot' }
+  ]);
+  const [input, setInput] = React.useState('');
+  const [isTyping, setIsTyping] = React.useState(false);
 
+  const handleSend = () => {
+    if (!input.trim()) return;
+    const userMsg = { text: input, sender: 'user' };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setIsTyping(true);
+
+    // Simulated AI Response (Safe & Fast)
+    setTimeout(() => {
+      let botResponse = "That's a great question! As an aspiring " + (student?.dreamCareer || "professional") + ", I suggest focusing on consistent daily practice and building a strong portfolio.";
+      if (input.toLowerCase().includes("project")) botResponse = "I recommend starting with a small project that solves a real problem. Check the 'Portfolio Projects' section of your roadmap for ideas!";
+      if (input.toLowerCase().includes("study")) botResponse = "Consistency is key! Try to dedicate at least 2 hours a day to your roadmap for the best results.";
+      
+      setMessages(prev => [...prev, { text: botResponse, sender: 'bot' }]);
+      setIsTyping(false);
+    }, 1000);
+  };
+
+  return (
+    <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999, fontFamily: 'Inter, sans-serif' }}>
+      {/* Floating Bubble */}
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        style={{ 
+          width: '60px', height: '60px', borderRadius: '30px', 
+          background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', 
+          color: 'white', border: 'none', cursor: 'pointer', 
+          fontSize: '1.5rem', boxShadow: '0 10px 20px rgba(99, 102, 241, 0.4)',
+          transition: 'transform 0.3s ease', display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+      >
+        {isOpen ? '✖' : '🤖'}
+      </button>
+
+      {/* Chat Window */}
+      {isOpen && (
+        <div style={{ 
+          position: 'absolute', bottom: '80px', right: 0, 
+          width: '320px', height: '450px', 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          backdropFilter: 'blur(15px)', borderRadius: '20px', 
+          boxShadow: '0 15px 35px rgba(0,0,0,0.2)', 
+          display: 'flex', flexDirection: 'column', 
+          border: '1px solid rgba(255, 255, 255, 0.5)',
+          overflow: 'hidden', animation: 'fadeInUp 0.3s ease-out'
+        }}>
+          <div style={{ padding: '15px', background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', color: 'white', fontWeight: '700' }}>
+            🤖 Gemma AI Mentor
+          </div>
+          <div style={{ flex: 1, padding: '15px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {messages.map((msg, i) => (
+              <div key={i} style={{ 
+                alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                padding: '8px 12px', borderRadius: '12px', 
+                background: msg.sender === 'user' ? '#6366f1' : '#f1f5f9',
+                color: msg.sender === 'user' ? 'white' : '#1e293b',
+                fontSize: '0.85rem', maxWidth: '80%'
+              }}>
+                {msg.text}
+              </div>
+            ))}
+            {isTyping && <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Gemma is thinking...</div>}
+          </div>
+          <div style={{ padding: '10px', borderTop: '1px solid #eee', display: 'flex', gap: '5px' }}>
+            <input 
+              type="text" value={input} onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Ask me anything..." 
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #ddd', outline: 'none' }}
+            />
+            <button onClick={handleSend} style={{ padding: '8px', borderRadius: '8px', background: '#6366f1', color: 'white', border: 'none', cursor: 'pointer' }}>➔</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 // --- Typewriter Component for AI Streaming Effect ---
 const Typewriter = ({ text, delay = 20 }) => {
   const [currentText, setCurrentText] = useState('');
@@ -219,6 +306,9 @@ const Results = () => {
                 You have a strong foundation! Focus on the skill gaps below to reach 100%.
               </p>
             </div>
+            <div>
+             <GemmaMentorBot student={student} /> 
+    </div>
           </div>
           
           {/* PDF Download Button - Hidden during PDF capture to avoid recursion */}
